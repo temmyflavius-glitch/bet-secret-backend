@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "bet-secret-backend",
   "version": "1.0.0",
   "description": "NowPayments IPN handler for 10Bet Formula",
