@@ -20,8 +20,8 @@ export default async function createPayment(req, res) {
         order_description: plan,
         ipn_callback_url: "https://bet-secret-backend-1.onrender.com/nowpayments-ipn",
         success_url: "https://bet-secret.online/thank-you.html",
-        cancel_url: "https://bet-secret.online/payment-failed.html"
-}),
+        cancel_url: "https://bet-secret.online/payment-failed.html",
+      }),
     });
 
     const data = await response.json();
