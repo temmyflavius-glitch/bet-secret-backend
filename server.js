@@ -1,65 +1,37 @@
-// server.js
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import admin from "firebase-admin";
-import fs from "fs";
-import createPayment from "./createPayment.js";
+// createPayment.js
+import fetch from "node-fetch";
 
-dotenv.config();
-
-// ✅ Initialize Firebase Admin using environment variable
-if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(
-  Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64, "base64").toString("utf8")
-);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
-
-
-const db = admin.firestore();
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-// ✅ Test route
-app.get("/", (req, res) => {
-  res.send("🚀 Bet Secret backend is running...");
-});
-
-// ✅ Payment route
-app.post("/create-payment", createPayment);
-
-// ✅ Subscribe by Book Purchase
-app.post("/subscribe-book-purchase", async (req, res) => {
+export default async function createPayment(req, res) {
   try {
-    const { email, platform, transactionId, proofUrl } = req.body;
+    const { email, plan, price } = req.body;
 
-    if (!email || !platform || !transactionId) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
+    console.log("📩 Creating payment for:", { email, plan, price });
 
-    // Store in Firestore for admin review
-    await db.collection("pendingBookSubscribers").doc(email).set({
-      email,
-      platform,
-      transactionId,
-      proofUrl: proofUrl || null,
-      status: "pending",
-      submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+    const response = await fetch("https://api-sandbox.nowpayments.io/v1/payment", {
+      method: "POST",
+      headers: {
+        "x-api-key": process.env.NOWPAYMENTS_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        price_amount: price,
+        price_currency: "usd",
+        pay_currency: "btc",
+        order_id: `${email}-${plan}`,
+        order_description: plan,
+        is_fixed_rate: true,
+        ipn_callback_url: "https://bet-secret-backend-1.onrender.com/nowpayments-ipn",
+        success_url: "https://bet-secret-formula.web.app/thankyou.html",
+        cancel_url: "https://bet-secret-formula.web.app/registration.html",
+      }),
     });
 
-    console.log(`📚 Book purchase submitted by ${email}`);
-    res.status(200).json({ success: true, message: "Purchase submitted for review" });
+    const data = await response.json();
+    console.log("✅ NowPayments API response:", data);
 
-  } catch (err) {
-    console.error("❌ Error submitting book purchase:", err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error("Payment creation failed:", error);
+    res.status(500).json({ error: "Payment creation failed" });
   }
-});
-
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+}
