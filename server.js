@@ -1,37 +1,37 @@
-// createPayment.js
-import fetch from "node-fetch";
+// server.js
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import createPayment from "./createPayment.js";
 
-export default async function createPayment(req, res) {
-  try {
-    const { email, plan, price } = req.body;
+dotenv.config();
 
-    console.log("📩 Creating payment for:", { email, plan, price });
+const app = express();
 
-    const response = await fetch("https://api-sandbox.nowpayments.io/v1/payment", {
-      method: "POST",
-      headers: {
-        "x-api-key": process.env.NOWPAYMENTS_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        price_amount: price,
-        price_currency: "usd",
-        pay_currency: "btc",
-        order_id: `${email}-${plan}`,
-        order_description: plan,
-        is_fixed_rate: true,
-        ipn_callback_url: "https://bet-secret-backend-1.onrender.com/nowpayments-ipn",
-        success_url: "https://bet-secret-formula.web.app/thankyou.html",
-        cancel_url: "https://bet-secret-formula.web.app/registration.html",
-      }),
-    });
+// ✅ Middleware
+app.use(cors({
+  origin: "*", // Allow all origins (you can restrict later)
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "x-api-key"]
+}));
+app.use(express.json());
 
-    const data = await response.json();
-    console.log("✅ NowPayments API response:", data);
+// ✅ Root route
+app.get("/", (req, res) => {
+  res.json({ message: "✅ Bet Secret Backend is running fine!" });
+});
 
-    return res.status(200).json(data);
-  } catch (error) {
-    console.error("Payment creation failed:", error);
-    res.status(500).json({ error: "Payment creation failed" });
-  }
-}
+// ✅ Payment route
+app.post("/create-payment", createPayment);
+
+// ✅ Health check route (useful for Render)
+app.get("/status", (req, res) => {
+  res.status(200).json({ status: "ok", time: new Date().toISOString() });
+});
+
+// ✅ Dynamic port (Render provides PORT automatically)
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
