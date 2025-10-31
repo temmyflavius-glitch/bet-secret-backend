@@ -2,7 +2,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import createPayment from "./createPayment.js";
+import { createPayment } from "./createPayment.js";
+
 
 dotenv.config();
 
