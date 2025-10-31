@@ -1,38 +1,52 @@
-// server.js
 import express from "express";
 import cors from "cors";
+import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import { createPayment } from "./createPayment.js";
-
 
 dotenv.config();
 
 const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-// ✅ Middleware
-app.use(cors({
-  origin: "*", // Allow all origins (you can restrict later)
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type", "x-api-key"]
-}));
-app.use(express.json());
+// Log current mode (sandbox or live)
+const MODE = process.env.NOWPAYMENTS_MODE || "live";
+console.log(`💡 NowPayments mode: ${MODE.toUpperCase()}`);
+if (MODE === "sandbox") {
+  console.log("🧪 Sandbox mode active — all payments are in test mode.");
+}
 
-// ✅ Root route
+// ======== Create Crypto Payment Route ========
+app.post("/create-payment", async (req, res) => {
+  try {
+    const { email, plan, price } = req.body;
+
+    console.log("📩 Creating payment with body:", req.body);
+
+    if (!email || !plan || !price) {
+      return res.status(400).json({
+        status: false,
+        message: "Missing required fields: email, plan, or price",
+      });
+    }
+
+    const result = await createPayment(email, plan, price);
+    console.log("✅ Payment creation result:", result);
+    res.json(result);
+  } catch (error) {
+    console.error("❌ Error in /create-payment:", error);
+    res.status(500).json({
+      status: false,
+      message: "Server error creating payment",
+    });
+  }
+});
+
+// ======== Default Root Route ========
 app.get("/", (req, res) => {
-  res.json({ message: "✅ Bet Secret Backend is running fine!" });
+  res.send("✅ Bet Secret Backend is running successfully!");
 });
 
-// ✅ Payment route
-app.post("/create-payment", createPayment);
-
-// ✅ Health check route (useful for Render)
-app.get("/status", (req, res) => {
-  res.status(200).json({ status: "ok", time: new Date().toISOString() });
-});
-
-// ✅ Dynamic port (Render provides PORT automatically)
 const PORT = process.env.PORT || 8080;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
