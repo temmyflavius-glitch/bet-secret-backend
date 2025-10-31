@@ -7,6 +7,8 @@ const NOWPAYMENTS_BASE_URL =
 
 export async function createPayment(email, plan, price) {
   try {
+    console.log(`📩 Creating payment for: ${email}, plan: ${plan}, price: ${price}`);
+
     const response = await fetch(`${NOWPAYMENTS_BASE_URL}/payment`, {
       method: "POST",
       headers: {
@@ -26,10 +28,14 @@ export async function createPayment(email, plan, price) {
     });
 
     const data = await response.json();
+
+    // Log only useful info
     console.log("✅ NowPayments API response:", data);
+
     return data;
   } catch (error) {
-    console.error("❌ Error creating payment:", error);
+    // Avoid circular reference crash
+    console.error("❌ Error creating payment:", error?.message || error);
     return { status: false, message: "Error creating payment" };
   }
 }
