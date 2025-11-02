@@ -1,13 +1,7 @@
-import fetch from "node-fetch";
-
-const mode = (process.env.NOWPAYMENTS_MODE || "live").trim().toLowerCase();
-
 const NOWPAYMENTS_BASE_URL =
   mode === "sandbox"
     ? "https://api-sandbox.nowpayments.io/v1"
     : "https://api.nowpayments.io/v1";
-
-console.log(`💡 NowPayments mode: ${mode.toUpperCase()}`);
 
 export async function createPayment(email, plan, price) {
   try {
@@ -30,6 +24,15 @@ export async function createPayment(email, plan, price) {
     });
 
     const data = await response.json();
+
+    // ✅ Fix invoice_url for sandbox mode
+    if (mode === "sandbox" && data.invoice_url) {
+      data.invoice_url = data.invoice_url.replace(
+        "https://nowpayments.io",
+        "https://sandbox.nowpayments.io"
+      );
+    }
+
     console.log("✅ NowPayments API response:", data);
     return data;
   } catch (error) {
