@@ -4,7 +4,7 @@ const mode = (process.env.NOWPAYMENTS_MODE || "live").trim().toLowerCase();
 
 const NOWPAYMENTS_BASE_URL =
   mode === "sandbox"
-    ? "https://sandbox.nowpayments.io/api/v1"
+    ? "https://api-sandbox.nowpayments.io/v1"
     : "https://api.nowpayments.io/v1";
 
 console.log(`💡 NowPayments mode: ${mode.toUpperCase()}`);
