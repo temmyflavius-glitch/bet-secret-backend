@@ -29,13 +29,13 @@ export async function createPayment(email, plan, price) {
 
     const data = await response.json();
 
-    // ✅ Force sandbox redirect URL if in test mode
-    if (isSandbox && data.payment_id) {
-      data.invoice_url = `https://sandbox.nowpayments.io/payment/${data.payment_id}`;
-    }
+// ✅ Force correct sandbox redirect URL format
+if (isSandbox && data.payment_id) {
+  data.invoice_url = `https://sandbox.nowpayments.io/invoice?id=${data.payment_id}`;
+}
 
-    console.log("✅ NowPayments API response:", data);
-    return data;
+console.log("✅ NowPayments API response:", data);
+return data;
   } catch (error) {
     console.error("❌ Error creating payment:", error);
     return { status: false, message: "Error creating payment" };
