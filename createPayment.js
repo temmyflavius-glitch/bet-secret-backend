@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 const isSandbox = process.env.NOWPAYMENTS_MODE?.trim().toLowerCase() === "sandbox";
 
 const NOWPAYMENTS_BASE_URL = isSandbox
-  ? "https://sandbox.nowpayments.io/api/v1"
+  ? "https://api.sandbox.nowpayments.io/api/v1"
   : "https://api.nowpayments.io/v1";
 
 console.log(`💡 NowPayments mode: ${isSandbox ? "SANDBOX" : "LIVE"}`);
