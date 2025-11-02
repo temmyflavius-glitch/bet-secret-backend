@@ -1,15 +1,17 @@
 import fetch from "node-fetch";
 
-export async function createPayment(email, plan, price) {
-  const isSandbox = process.env.NOWPAYMENTS_MODE === "sandbox";
-  const NOWPAYMENTS_BASE_URL = isSandbox
+const mode = process.env.NOWPAYMENTS_MODE || "live";
+const NOWPAYMENTS_BASE_URL =
+  mode === "sandbox"
     ? "https://api-sandbox.nowpayments.io/v1"
     : "https://api.nowpayments.io/v1";
 
-  try {
-    console.log("📩 Creating payment with body:", { email, plan, price });
+console.log(`💡 NowPayments mode: ${mode.toUpperCase()}`);
+if (mode === "sandbox") console.log("🧪 Sandbox mode active — all payments are in test mode.");
 
-    const response = await fetch(`${NOWPAYMENTS_BASE_URL}/payment`, {
+export async function createPayment(email, plan, price) {
+  try {
+    const response = await fetch(`${NOWPAYMENTS_BASE_URL}/invoice`, {
       method: "POST",
       headers: {
         "x-api-key": process.env.NOWPAYMENTS_API_KEY,
@@ -28,14 +30,9 @@ export async function createPayment(email, plan, price) {
     });
 
     const data = await response.json();
+    console.log("✅ NowPayments API response:", data);
 
-// ✅ Force correct sandbox redirect URL format
-if (isSandbox && data.payment_id) {
-  data.invoice_url = `https://sandbox.nowpayments.io/invoice?id=${data.payment_id}`;
-}
-
-console.log("✅ NowPayments API response:", data);
-return data;
+    return data;
   } catch (error) {
     console.error("❌ Error creating payment:", error);
     return { status: false, message: "Error creating payment" };
