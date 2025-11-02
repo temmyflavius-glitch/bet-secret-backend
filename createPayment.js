@@ -1,18 +1,11 @@
 import fetch from "node-fetch";
 
-// Detect sandbox or live mode
-const isSandbox = process.env.NOWPAYMENTS_MODE?.trim().toLowerCase() === "sandbox";
-
-const NOWPAYMENTS_BASE_URL = isSandbox
-  ? "https://api-sandbox.nowpayments.io/v1"
-  : "https://api.nowpayments.io/v1";
-
-console.log(`💡 NowPayments mode: ${isSandbox ? "SANDBOX" : "LIVE"}`);
-if (isSandbox) {
-  console.log("🧪 Sandbox mode active — all payments are in test mode.");
-}
-
 export async function createPayment(email, plan, price) {
+  const isSandbox = process.env.NOWPAYMENTS_MODE === "sandbox";
+  const NOWPAYMENTS_BASE_URL = isSandbox
+    ? "https://api-sandbox.nowpayments.io/v1"
+    : "https://api.nowpayments.io/v1";
+
   try {
     console.log("📩 Creating payment with body:", { email, plan, price });
 
@@ -35,6 +28,12 @@ export async function createPayment(email, plan, price) {
     });
 
     const data = await response.json();
+
+    // ✅ Force sandbox redirect URL if in test mode
+    if (isSandbox && data.payment_id) {
+      data.invoice_url = `https://sandbox.nowpayments.io/payment/${data.payment_id}`;
+    }
+
     console.log("✅ NowPayments API response:", data);
     return data;
   } catch (error) {
