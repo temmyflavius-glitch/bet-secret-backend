@@ -1,7 +1,14 @@
+import fetch from "node-fetch";
+
+// Define mode (sandbox or live) from environment variable
+const mode = process.env.NOWPAYMENT_MODE?.trim().toLowerCase() || "live";
+
 const NOWPAYMENTS_BASE_URL =
   mode === "sandbox"
     ? "https://api-sandbox.nowpayments.io/v1"
     : "https://api.nowpayments.io/v1";
+
+console.log(`💡 NowPayments mode: ${mode.toUpperCase()}`);
 
 export async function createPayment(email, plan, price) {
   try {
@@ -25,7 +32,7 @@ export async function createPayment(email, plan, price) {
 
     const data = await response.json();
 
-    // ✅ Fix invoice_url for sandbox mode
+    // ✅ Fix invoice URL if in sandbox mode
     if (mode === "sandbox" && data.invoice_url) {
       data.invoice_url = data.invoice_url.replace(
         "https://nowpayments.io",
