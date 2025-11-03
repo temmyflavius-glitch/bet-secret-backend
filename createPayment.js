@@ -24,8 +24,8 @@ export async function createPayment(email, plan, price) {
         order_id: `${email}-${plan}`,
         order_description: plan,
         ipn_callback_url: "https://bet-secret-backend-1.onrender.com/nowpayments-ipn",
-        success_url: "https://10bet-secret-formula-79c3a.web.app/success",
-        cancel_url: "https://10bet-secret-formula-79c3a.web.app/cancel",
+        success_url: "https://bet-secret-formula-79c3a.web.app/user?payment=success",
+        cancel_url: "https://bet-secret-formula-79c3a.web.app/cancel",
       }),
     });
 
