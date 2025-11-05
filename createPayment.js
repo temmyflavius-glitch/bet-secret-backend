@@ -26,7 +26,7 @@ export async function createPayment(email, plan, price, successUrl) {
       order_description: plan,
       ipn_callback_url: "https://bet-secret-backend-1.onrender.com/nowpayments-ipn",
       success_url:
-        successUrl || `https://bet-secret-formula-79c3a.web.app/reset.html?email=${email}`,
+        success_url: `https://bet-secret-formula-79c3a.web.app/reset?email=${encodeURIComponent(email)}`,
       cancel_url: "https://bet-secret-formula-79c3a.web.app/cancel",
     };
 
