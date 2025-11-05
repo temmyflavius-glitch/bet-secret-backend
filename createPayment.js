@@ -1,13 +1,15 @@
 import fetch from "node-fetch";
 
 const mode = process.env.NOWPAYMENTS_MODE || "live";
+
 const NOWPAYMENTS_BASE_URL =
   mode === "sandbox"
     ? "https://api-sandbox.nowpayments.io/v1"
     : "https://api.nowpayments.io/v1";
 
 console.log(`💡 NowPayments mode: ${mode.toUpperCase()}`);
-if (mode === "sandbox") console.log("🧪 Sandbox mode active — all payments are in test mode.");
+if (mode === "sandbox")
+  console.log("🧪 Sandbox mode active — all payments are in test mode.");
 
 /**
  * Create NowPayments invoice
@@ -21,12 +23,13 @@ export async function createPayment(email, plan, price, successUrl) {
     const paymentBody = {
       price_amount: price,
       price_currency: "USD",
-      pay_currency: "BTC",
+      pay_currency: "USDTTRC20", // ✅ Use USDT on TRON (TRC20)
       order_id: `${email}-${plan}`,
       order_description: plan,
       ipn_callback_url: "https://bet-secret-backend-1.onrender.com/nowpayments-ipn",
       success_url:
-        success_url: `https://bet-secret-formula-79c3a.web.app/reset?email=${encodeURIComponent(email)}`,
+        successUrl ||
+        `https://bet-secret-formula-79c3a.web.app/reset?email=${encodeURIComponent(email)}`,
       cancel_url: "https://bet-secret-formula-79c3a.web.app/cancel",
     };
 
@@ -43,7 +46,6 @@ export async function createPayment(email, plan, price, successUrl) {
 
     const data = await response.json();
     console.log("✅ NowPayments API response:", data);
-
     return data;
   } catch (error) {
     console.error("❌ Error creating payment:", error);
